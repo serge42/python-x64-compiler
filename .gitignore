@@ -1,0 +1,13 @@
+# Vscode files
+/.vscode
+
+# Python
+/__pycache__
+/*.pyc
+
+# Pylex
+/parser.out
+/parsetab.py
+
+# Test/debug files
+/foo*

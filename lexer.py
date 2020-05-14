@@ -12,7 +12,7 @@ states = (
   ('main', 'exclusive')
 )
 
-keywords = ['str', 'int', 'def', 'class', 'if', 'elif', 'else', 'True', 'False', 'and', 'or', 'not', 'is', 'pass']
+keywords = ['str', 'int', 'def', 'class', 'if', 'elif', 'else', 'True', 'False', 'and', 'or', 'not', 'is', 'pass', 'while']
 
 tokens = [
   'indent', 'dedent', 'identifier', 'keyword', 'newline',

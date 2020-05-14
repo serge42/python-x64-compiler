@@ -118,6 +118,21 @@ class Compare(AST):
         self.right = right
         self._fields = ['left', 'op', 'right']
 
+class If(AST):
+    def __init__(self, test, body, orelse):
+        self.test = test
+        self.body = body
+        self.orelse = orelse
+        self._fields = ['test', 'body', 'orelse']
+
+class While(AST):
+    def __init__(self, test, body):
+        self.test = test
+        self.body = body
+        self._fields = ['test', 'body']
+
+class Pass(AST):
+    pass
 
 # class Box_types:
 #     integer = 'int'
@@ -141,14 +156,6 @@ class Compare(AST):
 #         if self.boxing:
 #             return 'box_' + self.type
 #         return 'unbox' + self.type
-
-
-class If(AST):
-    def __init__(self, test, body, orelse):
-        self.test = test
-        self.body = body
-        self.orelse = orelse
-        self._fields = ['test', 'body', 'orelse'] 
 
 # class Box_int(BOX):
 #     def __init__(self, value):

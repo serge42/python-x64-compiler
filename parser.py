@@ -58,6 +58,10 @@ def p_statement_group(p):
         elif isinstance(p[2], ast.AST):
             p[0] = p[2]
 
+def p_statement_pass(p):
+    'statement : pass'
+    p[0] = ast.Pass()
+
 def p_statement_assign(p):
     'statement : identifier EQ expression'
     var = ast.Name(id_=p[1], ctx=ast.Store())
@@ -71,6 +75,11 @@ def p_statement_if(p):
         p[0] = ast.If(p[2], p[6], p[12])
     else:
         p[0] = ast.If(p[2], [ p[4] ], [ p[8] ])
+
+def p_statement_while(p):
+    '''statement : while bool_expr colon newline indent suite dedent'''
+    # p[0] = ast.While(p[2], 0) # DEBUG
+    p[0] = ast.While(p[2], p[6])
 
 def p_expression_binop(p):
     '''expression : expression PLUS term

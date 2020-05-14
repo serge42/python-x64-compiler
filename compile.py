@@ -24,18 +24,16 @@ def boxing_fct_name(constant):
     value = constant.value if isinstance(constant, ast.Constant) else constant
 
     fct_name = ''
-    if isinstance(value, int): fct_name += 'box_int'
+    if isinstance(value, int): fct_name += 'box_long'
     elif isinstance(value, bool): fct_name += 'box_bool'
     elif isinstance(value, float): fct_name += 'box_float'
     elif isinstance(value, str): fct_name += 'box_string'
     else: raise RuntimeError('Unrecognized constant type {}'.format(type(value)))
     return fct_name
 
-# def unboxing_fct_name(btype):
-#     if btype == ast.Box_types.integer: return 'unbox_int'
-#     if btype == ast.Box_types.boolean: return 'unbox_bool'
-#     if btype == ast.Box_types.ffloat: return 'unbox_float'
-#     if btype == ast.Box_types.string: return 'unbox_string'
+def binops_return_type(v2, v3):
+    # TODO
+    return boxing_fct_name(1)
 
 def box_vars(flatten_stmts):
     new_stmts = []
@@ -77,13 +75,13 @@ def box_vars(flatten_stmts):
                 new_stmts.append(stmt)
             stmt = SimpleStmt(Ops.cmp, temp1, temp2)
             new_stmts.append(stmt)
-        elif s._op in Ops.bin_ops: # TODO
+        elif s._op in Ops.bin_ops:
             temp1 = s._v1; temp2 = s._v2; temp3 = s._v3
             if isinstance(s._v2, ast.Name):
                 temp2 = Temporals.generateTemp()
                 unbox_fct = 'un' + var_types[s._v2.id]
                 stmt = SimpleStmt(Ops.call, unbox_fct, s._v2, temp2)
-                new_stmts.append(s)
+                new_stmts.append(stmt)
             if isinstance(s._v3, ast.Name):
                 temp3 = Temporals.generateTemp()
                 unbox_fct = 'un' + var_types[s._v3.id]
@@ -92,9 +90,12 @@ def box_vars(flatten_stmts):
 
             if isinstance(s._v1, ast.Name):
                 temp1 = Temporals.generateTemp()
-                box_fct = var_types[s._v2.id] # TODO: addition of different types
+                # Chose type based on v2 and v3
+                box_fct = binops_return_type(s._v2, s._v3)
+                # box_fct = var_types[s._v2.id] # TODO: addition of different types
                 var_types[s._v1.id] = box_fct
             stmt = SimpleStmt(s._op, temp1, temp2, temp3) # Binop
+            new_stmts.append(stmt)
             if isinstance(s._v1, ast.Name): # Box back if necessary
                 stmt = SimpleStmt(Ops.call, box_fct, temp1, s._v1)
                 new_stmts.append(stmt)
@@ -109,7 +110,8 @@ def box_vars(flatten_stmts):
                 temp1 = Temporals.generateTemp()
                 box_fct = var_types[s._v2.id]
                 var_types[s._v1.id] = box_fct
-            stmt = SimpleStmt(s._op, temp1, temp1)
+            stmt = SimpleStmt(s._op, temp1, temp2)
+            new_stmts.append(stmt)
             if isinstance(s._v1, ast.Name):
                 stmt = SimpleStmt(Ops.call, box_fct, temp1, s._v1)
                 new_stmts.append(stmt)
@@ -144,9 +146,9 @@ def main():
     # TODO: BOX/unbox variables
     flatten_stmts = box_vars(flatten_stmts)
     # DEBUG
-    print("\nflattened statements:")
-    for i, s in enumerate(flatten_stmts):
-        print(i, s)
+    # print("\nflattened statements:")
+    # for i, s in enumerate(flatten_stmts):
+    #     print(i, s)
     # return
     
     # Generate x86

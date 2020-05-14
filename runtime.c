@@ -4,13 +4,14 @@
 #include "gc.h"
 
 enum type {
-    INT, FLOAT, BOOLEAN, STRING, LIST, TUPLE, OBJECT
+    INT, LONG, FLOAT, BOOLEAN, STRING, LIST, TUPLE, OBJECT
 };
 
 struct value {
     enum type type;
     union {
         int int_value;
+        long long_value;
         float float_value;
         bool bool_value;
         char *string_value;
@@ -51,6 +52,21 @@ int unbox_int(struct value *p)
 {
     if (p->type == INT)
         return p->int_value;
+    error("tried to unbox_int a non-integer value.");
+}
+
+struct value *box_long(long n) 
+{
+    struct value *p = GC_malloc(sizeof(struct value));
+    p->type = LONG;
+    p->long_value = n;
+    return p;
+}
+
+long unbox_long(struct value *p)
+{
+    if (p->type == LONG)
+        return p->long_value;
     error("tried to unbox_int a non-integer value.");
 }
 

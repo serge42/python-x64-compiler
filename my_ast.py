@@ -119,35 +119,36 @@ class Compare(AST):
         self._fields = ['left', 'op', 'right']
 
 
-class Box_types:
-    integer = 'int'
-    boolean = 'bool'
-    ffloat = 'float'
-    string = 'string'
-    undefined = 'udef'
+# class Box_types:
+#     integer = 'int'
+#     long = 'long'
+#     boolean = 'bool'
+#     ffloat = 'float'
+#     string = 'string'
+#     undefined = 'udef'
 
-class BOX(AST):
-    def __init__(self, value, btype, boxing=True):
-        self.value = value
-        self.type = btype
-        self.boxing = boxing
-        self._fields = ['value', 'type', 'boxing']
+# class BOX(AST):
+#     def __init__(self, value, btype, boxing=True):
+#         self.value = value
+#         self.type = btype
+#         self.boxing = boxing
+#         self._fields = ['value', 'type', 'boxing']
 
-    def __str__(self):
-        return "{}(value={})".format(self.__class__.__name__, self.value)
+#     def __str__(self):
+#         return "{}(value={})".format(self.__class__.__name__, self.value)
 
-    def boxing_fct(self):
-        if self.boxing:
-            return 'box_' + self.type
-        return 'unbox' + self.type
+#     def boxing_fct(self):
+#         if self.boxing:
+#             return 'box_' + self.type
+#         return 'unbox' + self.type
 
 
-class If(AST):
-    def __init__(self, test, body, orelse):
-        self.test = test
-        self.body = body
-        self.orelse = orelse
-        self._fields = ['test', 'body', 'orelse'] 
+# class If(AST):
+#     def __init__(self, test, body, orelse):
+#         self.test = test
+#         self.body = body
+#         self.orelse = orelse
+#         self._fields = ['test', 'body', 'orelse'] 
 
 # class Box_int(BOX):
 #     def __init__(self, value):

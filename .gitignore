@@ -11,3 +11,5 @@
 
 # Test/debug files
 /foo*
+/tests/*_output
+/tests/tmp*

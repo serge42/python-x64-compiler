@@ -57,7 +57,10 @@ def box_vars(flatten_stmts):
             new_stmts.append(stmt)
             # Box back function return
             if isinstance(s._v3, ast.Name):
-                box_fct = 'box_int' # TODO: accept other types
+                if s._v1 == 'input':
+                    box_fct = 'box_long' 
+                else:
+                    raise NotImplementedError() # TODO: accept other fct types
                 var_types[s._v3.id] = box_fct
                 stmt = SimpleStmt(Ops.call, box_fct, temp3, s._v3)
                 new_stmts.append(stmt)
@@ -90,9 +93,8 @@ def box_vars(flatten_stmts):
 
             if isinstance(s._v1, ast.Name):
                 temp1 = Temporals.generateTemp()
-                # Chose type based on v2 and v3
+                # Chose type based on v2 and v3 # TODO: addition of different types
                 box_fct = binops_return_type(s._v2, s._v3)
-                # box_fct = var_types[s._v2.id] # TODO: addition of different types
                 var_types[s._v1.id] = box_fct
             stmt = SimpleStmt(s._op, temp1, temp2, temp3) # Binop
             new_stmts.append(stmt)

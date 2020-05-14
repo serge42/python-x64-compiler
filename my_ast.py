@@ -143,12 +143,12 @@ class Compare(AST):
 #         return 'unbox' + self.type
 
 
-# class If(AST):
-#     def __init__(self, test, body, orelse):
-#         self.test = test
-#         self.body = body
-#         self.orelse = orelse
-#         self._fields = ['test', 'body', 'orelse'] 
+class If(AST):
+    def __init__(self, test, body, orelse):
+        self.test = test
+        self.body = body
+        self.orelse = orelse
+        self._fields = ['test', 'body', 'orelse'] 
 
 # class Box_int(BOX):
 #     def __init__(self, value):

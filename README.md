@@ -24,7 +24,7 @@ Tests can be run using _run.sh_ <test_file.py> [inputs] [--mac]
 
 - print.py: simple test of the print function (pass)
 - input.py: simple test of the input function (pass)
-- binops.py: test of intricate arithmetic operations, and some dead code. (fail)
+- binops.py: test of intricate arithmetic operations, and some dead code. (pass)
 - spilling.py: test with many variables and operations to force the compiler to spill.
 - ifelse.py: test a simple if/else statement
 - while.py: test a simple while loop (fail)

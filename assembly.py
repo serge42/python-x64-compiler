@@ -204,5 +204,5 @@ class Registers():
     allocable = [rax, rbx, rcx, rdx, rsi, r8, r9, r10, r11, r12, r13, r14, r15] # All_reg - {rdi, rsp, rbp}
     # allocable = [rax, rbx, rcx] # Reduced registers to test spilling
     params = [rdi, rsi, rdx, rcx, r8, r9]
-    caller_save = [rax, rcx, rdx, rdi, rsi, r8, r9, r10, r11] # caller_save - {rsp}
+    caller_save = [rax, rcx, rdx, rsi, r8, r9, r10, r11] # caller_save - {rdi, rsp}
     callee_save = [rbx, r12, r13, r14, r15] # callee_saved - {rbp}

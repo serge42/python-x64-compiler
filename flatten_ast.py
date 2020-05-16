@@ -5,15 +5,13 @@ import my_ast as ast
 
 
 def flatten_if_test(t, flatten_stmts, labels, op_type='and', nextLabel=None):
-    assert isinstance(t, ast.Name) \
+    assert isinstance(t, ast.Constant) \
             or isinstance(t, ast.Compare) \
             or isinstance(t, ast.BoolOp), \
             "Test should be either True/False or bool_expr; received {}".format(type(t))
-    if_body, else_body, end_if = labels
+    if_body, else_body = labels
     if isinstance(t, ast.BoolOp):
         # Chain comparisons, recursive call
-        # otype = 'and' if isinstance(t.op, ast.And) else 'or'
-        # [flatten_if_test(x, flatten_stmts, labels, op_type=otype) for x in t.values]
         for i in range(len(t.values)):
             if isinstance(t.op, ast.Or):
                 if isinstance(t.values[i], ast.BoolOp):
@@ -35,15 +33,46 @@ def flatten_if_test(t, flatten_stmts, labels, op_type='and', nextLabel=None):
         else: 
             s2 = SimpleStmt(Ops.comparison2jmp(t.op), if_body)
         flatten_stmts.extend((s1, s2))
-    elif isinstance(t, ast.Name):
-        assert t.id == 'True' or t.id == 'False'
-        if op_type == 'and' and t.id == 'False':
+    elif isinstance(t, ast.Constant):
+        assert t.value is True or t.value is False
+        if op_type == 'and' and t.value is False:
             flatten_stmts.append(SimpleStmt(Ops.jmp, else_body))
-        elif op_type == 'or' and t.id == 'True':
+        elif op_type == 'or' and t.value is True:
             flatten_stmts.append(SimpleStmt(Ops.jmp, if_body))
         # else: do nothing
     else:
         raise NotImplementedError()
+
+def flatten_while_test(t, flatten_stmts, labels, op_type, nextLabel=None):
+    header_label, body_label, end_label = labels
+    for i in range(len(t.values)):
+        if isinstance(t, ast.BoolOp):
+            if isinstance(t.op, ast.Or):
+                if isinstance(t.values[i], ast.BoolOp):
+                    nextLabel = Labels.nextLabel()
+                    flatten_while_test(t.values[i], flatten_stmts, labels, op_type='or', nextLabel=nextLabel)
+                    flatten_stmts.append(SimpleStmt(Ops.jmp, body_label))
+                    flatten_stmts.append(SimpleStmt(Ops.label, nextLabel))
+                else:
+                    flatten_while_test(t.values[i], flatten_stmts, labels, op_type='or')
+            else:
+                flatten_while_test(t.values[i], flatten_stmts, labels, op_type='and', nextLabel=nextLabel)
+
+        elif isinstance(t, ast.Compare):
+            s1 = SimpleStmt(Ops.cmp, t.right, t.left)
+            if op_type == 'and':
+                lbl = nextLabel if nextLabel else end_label
+                s2 = SimpleStmt(Ops.comparison2jmp_inversed(t.op), lbl)
+            else:
+                s2 = SimpleStmt(Ops.comparison2jmp(t.op), body_label)
+            flatten_stmts.extend((s1, s2))
+        elif isinstance(t, ast.Constant):
+            assert t.value is True or t.value is False
+            if op_type == 'and' and t.value is False:
+                flatten_stmts.append(SimpleStmt(Ops.jmp, end_label))
+            elif op_type == 'or' and t.value is True:
+                flatten_stmts.append(SimpleStmt(Ops.jmp, body_label))
+    pass
 
 
 def flattenBinOP(t, flatten_stmts, op, temp=None):
@@ -124,9 +153,9 @@ def flatten(t, flatten_stmts, temp=None):
             flatten_stmts.append(s)
 
     elif isinstance(t, ast.If):
-        if isinstance(t.test, ast.Name): # test in {True/False}
+        if isinstance(t.test, ast.Constant) and (t.test.value is True or t.test.value is False): # test in {True/False}
             assert t.test.id == 'True' or t.test.id == 'False', 'Boolean constants are True/False'
-            if t.test.id == 'True':
+            if t.test.id is True:
                 # Flatten if_body only
                 [flatten(x, flatten_stmts) for x in t.body]
             else: # Flatten orelse only
@@ -135,7 +164,7 @@ def flatten(t, flatten_stmts, temp=None):
             if_body = Labels.nextLabel()
             else_body = Labels.nextLabel()
             end_if = Labels.nextLabel()
-            flatten_if_test(t.test, flatten_stmts, labels=(if_body, else_body, end_if))
+            flatten_if_test(t.test, flatten_stmts, labels=(if_body, else_body))
             
             if isinstance(t.test, ast.BoolOp) and isinstance(t.test.op, ast.Or): # Jump over if body to else
                 flatten_stmts.append(SimpleStmt(Ops.jmp, else_body))
@@ -149,6 +178,28 @@ def flatten(t, flatten_stmts, temp=None):
             [flatten(x, flatten_stmts) for x in t.orelse]
             flatten_stmts.append(SimpleStmt(Ops.label, end_if)) # Add label to end if
             
-            
+    elif isinstance(t, ast.While):
+        if isinstance(t.test, ast.Constant) and t.test.value is False:
+            pass # Drop the while
+        else:
+            header_label = Labels.nextLabel()
+            body_label = Labels.nextLabel()
+            end_label = Labels.nextLabel()
+            flatten_stmts.append(SimpleStmt(Ops.label, header_label)) # Add header label before boolean test(s)
+
+            if not isinstance(t.test, ast.Constant): # Test is True: no need to test, infinite loop
+                flatten_if_test(t.test, flatten_stmts, labels=(body_label, end_label))
+
+                if isinstance(t.test, ast.BoolOp) and isinstance(t.test.op, ast.Or): # Jmp over body (on False)
+                    flatten_stmts.append(SimpleStmt(Ops.jmp, end_label))
+
+                flatten_stmts.append(SimpleStmt(Ops.label, body_label))
+            # Flatten body
+            [flatten(x, flatten_stmts) for x in t.body]
+            # Jmp to header
+            flatten_stmts.append(SimpleStmt(Ops.jmp, header_label))
+            # Add end label
+            flatten_stmts.append(SimpleStmt(Ops.label, end_label))
+
     else:
         print("{}".format(t))

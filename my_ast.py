@@ -99,7 +99,7 @@ class UnaryOp(AST):
 
 class Constant(AST):
     def __init__(self, value=None):
-        self.value = int(value) # in case string is passed from parser
+        self.value = eval(value) if isinstance(value, str) else value # in case string is passed from parser
         self._fields = ['value']
 
     def __str__(self):

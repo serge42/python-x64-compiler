@@ -221,7 +221,7 @@ class MyCompiler():
         # for s in reversed(pseudo_stmts):
         while i >= 0:
             s = pseudo_stmts[i]
-            live_out = live[i+1]
+            live_out = live[i].union(live[i+1])
             DEF = set(); USE = set()
             if isinstance(s, MOV):
                 # Remove useless stmt (passing parameter isn't useless)
@@ -278,12 +278,15 @@ class MyCompiler():
                     if s._name.startswith('loop_end'):
                         # Save end of loop body index
                         label = s._name.split('_')[-1]
-                        loop_end[label] = i
-                    if s._name.startswith('loop_body'):
+                        loop_end[label] = (i, live_out)
+                    elif s._name.startswith('loop_body'):
                         label = s._name.split('_')[-1]
                         if label in loop_end:
+                            new_i, end_out = loop_end.pop(label)
+                            # Propagate live_out[end_loop] to live_out[loop_header] (loop body, i, end of loop header, j: j = i-1)
+                            live[i-1] = end_out
                             # Propagate live[start_loop_body] in live[end_loop_body]
-                            i = loop_end.pop(label)
+                            i = new_i
                             live[i] = live[i].union(live_out)
                         
 

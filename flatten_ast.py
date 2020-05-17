@@ -182,9 +182,10 @@ def flatten(t, flatten_stmts, temp=None):
         if isinstance(t.test, ast.Constant) and t.test.value is False:
             pass # Drop the while
         else:
-            header_label = Labels.nextLabel()
-            body_label = Labels.nextLabel()
-            end_label = Labels.nextLabel()
+            label = Labels.nextLabel()
+            header_label = 'loop_header_' + label 
+            body_label = 'loop_body_' + label
+            end_label = 'loop_end_' + label
             flatten_stmts.append(SimpleStmt(Ops.label, header_label)) # Add header label before boolean test(s)
 
             if not isinstance(t.test, ast.Constant): # Test is True: no need to test, infinite loop

@@ -213,12 +213,15 @@ class MyCompiler():
         pseudo_stmts: list of statements in pseudo-x86 using virtual registers and ASSEMBLY nodes
         Returns: live: list of sets containing st. live[i] = live_in for stmt i, live[i+1] = live_out for stmt i'''
         # Liveness analysis
-        live = [set()] # final live_out is empty
-        new_stmts = []
+        loop_end = {}
+        live = [set()] * (len(pseudo_stmts)+1) # final live_out is empty
+        new_stmts = [None] * len(pseudo_stmts)
         branch_out = None
         i = len(pseudo_stmts) - 1
-        for s in reversed(pseudo_stmts):
-            live_out = live[-1]
+        # for s in reversed(pseudo_stmts):
+        while i > 0:
+            s = pseudo_stmts[i]
+            live_out = live[i+1]
             DEF = set(); USE = set()
             if isinstance(s, MOV):
                 # Remove useless stmt (passing parameter isn't useless)
@@ -228,7 +231,7 @@ class MyCompiler():
                     USE.add(s._S) 
                 if isinstance(s._D, REG) or isinstance(s._D, V_REG):
                     DEF.add(s._D)
-                new_stmts.append(s)
+                new_stmts[i] = s
 
             elif isinstance(s, ADD) or isinstance(s, SUB) or isinstance(s, IMUL):
                 # Remove useless stmt (passing parameter or saveing on stack isn't useless)
@@ -239,41 +242,56 @@ class MyCompiler():
                     USE.add(s._S)
                 # <op>._D is always REG or V_REG
                 USE.add(s._D) # Could add DEF.add(s._D)
-                new_stmts.append(s)
+                new_stmts[i] = s
 
             elif isinstance(s, NEG):
                 if isinstance(s._D, REG) or isinstance(s._D, V_REG):
                     if drop_stmts and not s._D in live_out and not s._D in Registers.params:
                         continue
                     USE.add(s._D) # Could add DEF.add(s._D)
-                new_stmts.append(s)
+                new_stmts[i] = s
             elif isinstance(s, CALL):
                 if self.is_print_fct(s):
                     USE.add(Registers.rdi)
                 DEF.add(Registers.rax) # CALL writes to %rax -> add to DEF
-                new_stmts.append(s)
+                new_stmts[i] = s
             elif isinstance(s, CMP):
                 if isinstance(s._S1, V_REG):
                     USE.add(s._v1)
                 if isinstance(s._S2, V_REG):
                     USE.add(s._S2)
-                new_stmts.append(s)
+                new_stmts[i] = s
             elif isinstance(s, LABEL):
                 # TODO: check if it is a `while` or `if` label
                 # save live_out for the previous label (if body)
                 if branch_out is None: 
                     branch_out = live_out
                 else:
-                    live_out = branch_out
+                    live_out = live_out.union(branch_out)
                     branch_out = None
-                new_stmts.append(s)
+                new_stmts[i] = s
+
+                if s._name.startswith('loop'):
+                    if s._name.startswith('loop_end'):
+                        # Save end of loop body index
+                        label = s._name.split('_')[-1]
+                        loop_end[label] = i
+                    if s._name.startswith('loop_body'):
+                        label = s._name.split('_')[-1]
+                        if label in loop_end:
+                            # Propagate live[start_loop_body] in live[end_loop_body]
+                            i = loop_end.pop(label)
+                            live[i] = live[i].union(live_out)
+                        
+
             else: # No change to DEF and USE
-                new_stmts.append(s)
+                new_stmts[i] = s
 
             # Equation update of live_in[i]
-            live.append( (live_out - DEF).union(USE) )
+            live[i] = (live_out - DEF).union(USE)
+            i -= 1
         # End for
-        live.reverse(); new_stmts.reverse() # live and new_stmts were build in reverse 
+        # live.reverse(); new_stmts.reverse() # live and new_stmts were build in reverse 
         return live, new_stmts
 
     def _build_interference(self, liveness):

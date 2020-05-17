@@ -161,9 +161,10 @@ def flatten(t, flatten_stmts, temp=None):
             else: # Flatten orelse only
                 [flatten(x, flatten_stmts) for x in t.orelse]
         else: # Recursively flatten t.test
-            if_body = Labels.nextLabel()
-            else_body = Labels.nextLabel()
-            end_if = Labels.nextLabel()
+            label = Labels.nextLabel()
+            if_body = 'if_body_' + label
+            else_body = 'if_else_' + label
+            end_if = 'if_end_' + label
             flatten_if_test(t.test, flatten_stmts, labels=(if_body, else_body))
             
             if isinstance(t.test, ast.BoolOp) and isinstance(t.test.op, ast.Or): # Jump over if body to else

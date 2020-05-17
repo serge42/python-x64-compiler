@@ -237,22 +237,23 @@ class MyCompiler():
             elif isinstance(s, ADD) or isinstance(s, SUB) or isinstance(s, IMUL):
                 # Remove useless stmt (passing parameter or saveing on stack isn't useless)
                 if drop_stmts and not s._D in Registers.params and not isinstance(s._D, STACK_VAR) and not s._D in live_out:
-                    i -= 1
-                    continue
-                # ADD S, D -> D += S; both S and D are used and live if they're (virtual)registers
-                if isinstance(s._S, REG) or isinstance(s._S, V_REG):
-                    USE.add(s._S)
-                # <op>._D is always REG or V_REG
-                USE.add(s._D) # Could add DEF.add(s._D)
-                new_stmts[i] = s
+                    pass # Drop statement
+                else:
+                    # ADD S, D -> D += S; both S and D are used and live if they're (virtual)registers
+                    if isinstance(s._S, REG) or isinstance(s._S, V_REG):
+                        USE.add(s._S)
+                    # <op>._D is always REG or V_REG
+                    USE.add(s._D) # Could add DEF.add(s._D)
+                    new_stmts[i] = s
 
             elif isinstance(s, NEG):
-                if isinstance(s._D, REG) or isinstance(s._D, V_REG):
-                    if drop_stmts and not s._D in live_out and not s._D in Registers.params:
-                        i -= 1
-                        continue
-                    USE.add(s._D) # Could add DEF.add(s._D)
-                new_stmts[i] = s
+                if isinstance(s._D, REG) or isinstance(s._D, V_REG) \
+                        and (drop_stmts and not s._D in live_out and not s._D in Registers.params):
+                    pass # Drop statement
+                else:
+                    if isinstance(s._D, REG) or isinstance(s._D, V_REG):
+                        USE.add(s._D) # Could add DEF.add(s._D)
+                    new_stmts[i] = s
             elif isinstance(s, CALL):
                 if self.is_print_fct(s):
                     USE.add(Registers.rdi)
@@ -265,7 +266,6 @@ class MyCompiler():
                     USE.add(s._S2)
                 new_stmts[i] = s
             elif isinstance(s, LABEL):
-                # TODO: check if it is a `while` or `if` label
                 # save live_out for the previous label (if body)
                 if branch_out is None: 
                     branch_out = live_out

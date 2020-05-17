@@ -4,8 +4,15 @@
 #include "gc.h"
 
 enum type {
-    INT, LONG, FLOAT, BOOLEAN, STRING, LIST, TUPLE, OBJECT
+    INT, LONG, FLOAT, BOOLEAN, STRING, LIST, TUPLE, DICT
 };
+
+struct list
+{
+    long size;
+    struct value *pt;
+};
+
 
 struct value {
     enum type type;
@@ -15,8 +22,9 @@ struct value {
         float float_value;
         bool bool_value;
         char *string_value;
-        // list *list_value;
+        struct list *list_value;
         // tuple *tuple_value;
+        // dict *dict_value;
         // struct {
         //     klass *klass;
         //     size_t attrs_size;
@@ -83,6 +91,36 @@ bool unbox_bool(struct value *p)
     if (p->type == BOOLEAN)
         return p->bool_value;
     error("tried to unbox_bool a non-bool value.");
+}
+
+struct value *box_float(float f)
+{
+    struct value *p = GC_MALLOC(sizeof(struct value));
+    p->type = FLOAT;
+    p->float_value = f;
+    return p;
+}
+
+float unbox_float(struct value *p)
+{
+    if (p->type == FLOAT)
+        return p->float_value;
+    error("Tried to unbox_float a non-float value.");
+}
+
+struct value *create_array()
+{
+    struct value *p = GC_MALLOC(sizeof(struct value));
+    struct list *l = GC_MALLOC(sizeof(struct list) * 10); // start with size 10
+    p->type = LIST;
+    p->list_value = l;
+}
+
+long len(struct value *p)
+{
+    if (p->type == LIST)
+        return p->list_value->size; 
+    error("Object has no len()");
 }
 
 void error(char *msg)

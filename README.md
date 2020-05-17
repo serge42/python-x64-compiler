@@ -28,7 +28,7 @@ Tests can be run using _run.sh_ <test_file.py> [inputs] [--mac]
 - spilling.py: test with many variables and operations to force the compiler to spill. (pass)
 - bool.py: test boolean expressions
 - ifelse.py: test a simple if/else statement (pass)
-- while.py: test a simple while loop (pass)
+- while.py: test a simple while loop (fail)
 - whileif.py: test a while and an if
 - types.py: test different data types
 - arrays.py: test simple arrays

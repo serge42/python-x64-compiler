@@ -219,23 +219,25 @@ class MyCompiler():
         branch_out = None
         i = len(pseudo_stmts) - 1
         # for s in reversed(pseudo_stmts):
-        while i > 0:
+        while i >= 0:
             s = pseudo_stmts[i]
             live_out = live[i+1]
             DEF = set(); USE = set()
             if isinstance(s, MOV):
                 # Remove useless stmt (passing parameter isn't useless)
                 if drop_stmts and not s._D in Registers.params and not isinstance(s._D, STACK_VAR) and not s._D in live_out:
-                    continue
-                if isinstance(s._S, REG) or isinstance(s._S, V_REG):
-                    USE.add(s._S) 
-                if isinstance(s._D, REG) or isinstance(s._D, V_REG):
-                    DEF.add(s._D)
-                new_stmts[i] = s
+                    pass # Drop statement s
+                else:
+                    if isinstance(s._S, REG) or isinstance(s._S, V_REG):
+                        USE.add(s._S) 
+                    if isinstance(s._D, REG) or isinstance(s._D, V_REG):
+                        DEF.add(s._D)
+                    new_stmts[i] = s
 
             elif isinstance(s, ADD) or isinstance(s, SUB) or isinstance(s, IMUL):
                 # Remove useless stmt (passing parameter or saveing on stack isn't useless)
                 if drop_stmts and not s._D in Registers.params and not isinstance(s._D, STACK_VAR) and not s._D in live_out:
+                    i -= 1
                     continue
                 # ADD S, D -> D += S; both S and D are used and live if they're (virtual)registers
                 if isinstance(s._S, REG) or isinstance(s._S, V_REG):
@@ -247,6 +249,7 @@ class MyCompiler():
             elif isinstance(s, NEG):
                 if isinstance(s._D, REG) or isinstance(s._D, V_REG):
                     if drop_stmts and not s._D in live_out and not s._D in Registers.params:
+                        i -= 1
                         continue
                     USE.add(s._D) # Could add DEF.add(s._D)
                 new_stmts[i] = s
@@ -352,6 +355,9 @@ class MyCompiler():
                 if isinstance(s._S2, V_REG):
                     new_S2 = self._vars[s._S2]
                 stmts.append(CMP(new_S1, new_S2))
+
+            elif s is None:
+                pass # Remove dropped stmts
             else: stmts.append(s)
 
         return stmts

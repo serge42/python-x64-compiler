@@ -118,10 +118,11 @@ struct value *create_array()
 
 struct value *access_array(struct value *p, long index)
 {
+    struct list *l;
     if (p->type == LIST) {
         l = p->list_value;
         if (index < l->size)
-            return l->pt[index];
+            return &l->pt[index];
         error("array index out of bound");
     }
     error("Tring to access a non-list or dict value.");

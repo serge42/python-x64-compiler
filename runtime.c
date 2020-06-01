@@ -108,24 +108,38 @@ float unbox_float(struct value *p)
     error("Tried to unbox_float a non-float value.");
 }
 
-struct value *create_array()
+struct value *create_array(long size)
 {
     struct value *p = GC_MALLOC(sizeof(struct value));
-    struct list *l = GC_MALLOC(sizeof(struct list) * 10); // start with size 10
+    struct list *l = GC_MALLOC(sizeof(struct list) * size);
     p->type = LIST;
     p->list_value = l;
 }
 
-struct value *access_array(struct value *p, long index)
+void list_access_write(struct value *p, long index, struct value *p obj)
 {
     struct list *l;
-    if (p->type == LIST) {
+    if (p->type == LIST)
+    {
+        l = p->list_value;
+        if (index < l->size)
+            l->pt[index] = obj;
+        error("List index out of bound.")
+    }
+    error("Trying to write in a non-list value.")
+}
+
+struct value *list_access_read(struct value *p, long index)
+{
+    struct list *l;
+    if (p->type == LIST) 
+    {
         l = p->list_value;
         if (index < l->size)
             return &l->pt[index];
-        error("array index out of bound");
+        error("List index out of bound");
     }
-    error("Tring to access a non-list or dict value.");
+    error("Subscript of a non-list value.");
 }
 
 long len(struct value *p)

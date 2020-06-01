@@ -10,7 +10,7 @@ enum type {
 struct list
 {
     long size;
-    struct value *pt;
+    struct value **pt;
 };
 
 
@@ -22,7 +22,7 @@ struct value {
         float float_value;
         bool bool_value;
         char *string_value;
-        struct list *list_value;
+        struct list list_value;
         // tuple *tuple_value;
         // dict *dict_value;
         // struct {
@@ -110,33 +110,38 @@ float unbox_float(struct value *p)
 
 struct value *new_list(long size)
 {
-    struct value *p = GC_MALLOC(sizeof(struct value));
-    struct list *l = GC_MALLOC(sizeof(struct list) * size);
+    struct list *l = GC_MALLOC(sizeof(struct value));
+    struct value *p = GC_MALLOC(sizeof(struct value) );
+    l->pt = GC_MALLOC(sizeof(struct value) * size);
+    l->size = size;
     p->type = LIST;
-    p->list_value = l;
+    p->list_value = *l;
+    return p;
 }
 
 void list_access_write(struct value *p, long index, struct value *obj)
 {
-    struct list *l;
+    struct list l;
     if (p->type == LIST)
     {
         l = p->list_value;
-        if (index < l->size)
-            l->pt[index] = *obj;
-        error("List index out of bound.");
+        if (index >= l.size)
+            error("List index out of bound.");
+
+        l.pt[index] = obj;
+        return;
     }
     error("Trying to write in a non-list value.");
 }
 
 struct value *list_access_read(struct value *p, long index)
 {
-    struct list *l;
+    struct list l;
     if (p->type == LIST) 
     {
         l = p->list_value;
-        if (index < l->size)
-            return &l->pt[index];
+        if (index < l.size)
+            return (l.pt[index]);
         error("List index out of bound");
     }
     error("Subscript of a non-list value.");
@@ -145,12 +150,12 @@ struct value *list_access_read(struct value *p, long index)
 long len(struct value *p)
 {
     if (p->type == LIST)
-        return p->list_value->size; 
+        return p->list_value.size; 
     error("Object has no len()");
 }
 
 void error(char *msg)
 {
-    printf("%s", msg);
+    printf("%s\n", msg);
     exit(100);
 }

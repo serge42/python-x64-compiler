@@ -34,3 +34,6 @@ Tests can be run using _run.sh_ <test_file.py> [inputs] [--mac]
 - arrays.py: test simple arrays
 - dicts.py: test simple dictionary
 - whilearrays.py: test while on an array
+<!---
+- forarrays.py: test a ```for x in arr``` loop
+-->

@@ -116,17 +116,17 @@ struct value *new_list(long size)
     p->list_value = l;
 }
 
-void list_access_write(struct value *p, long index, struct value *p obj)
+void list_access_write(struct value *p, long index, struct value *obj)
 {
     struct list *l;
     if (p->type == LIST)
     {
         l = p->list_value;
         if (index < l->size)
-            l->pt[index] = obj;
-        error("List index out of bound.")
+            l->pt[index] = *obj;
+        error("List index out of bound.");
     }
-    error("Trying to write in a non-list value.")
+    error("Trying to write in a non-list value.");
 }
 
 struct value *list_access_read(struct value *p, long index)

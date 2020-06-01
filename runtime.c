@@ -108,7 +108,7 @@ float unbox_float(struct value *p)
     error("Tried to unbox_float a non-float value.");
 }
 
-struct value *create_array(long size)
+struct value *new_list(long size)
 {
     struct value *p = GC_MALLOC(sizeof(struct value));
     struct list *l = GC_MALLOC(sizeof(struct list) * size);

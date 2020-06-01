@@ -207,6 +207,18 @@ def p_factor_number_name_call(p):
               | call'''
     p[0] = p[1]
 
+def p_factor_list(p):
+    '''factor : obracket cbracket
+              | obracket expression cbracket
+              | name obracket integer cbracket'''
+    if len(p) == 3:
+        p[0] = ast.List()
+    elif len(p) == 4:
+        pass # TODO accept multiple expr separated by commas
+        p[0] = ast.List([ p[2] ])
+    elif len(p) == 5:
+        p[0] = ast.Subscript(p[1], p[3])
+
 # In case we have to add float numbers
 def p_number(p):
     'number : integer'

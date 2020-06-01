@@ -131,6 +131,17 @@ class While(AST):
         self.body = body
         self._fields = ['test', 'body']
 
+class List(AST):
+    def __init__(self, elts=[]):
+        self.elts = elts
+        self._fields = ['elts']
+
+class Subscript(AST):
+    def __init__(self, value, index):
+        self.value = value
+        self.index = index
+        self._fields = ['value, index']
+
 class Pass(AST):
     pass
 

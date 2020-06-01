@@ -133,7 +133,7 @@ def main():
         return
         
     t = parser.parse(code)
-    # print (ast.dump(t))
+    print (ast.dump(t))
 
     flatten_stmts = []
     flatten(t, flatten_stmts)

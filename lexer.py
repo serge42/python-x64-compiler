@@ -17,7 +17,7 @@ keywords = ['str', 'int', 'def', 'class', 'if', 'elif', 'else', 'True', 'False',
 tokens = [
   'indent', 'dedent', 'identifier', 'keyword', 'newline',
   'oparen', 'cparen', 'obracket', 'cbracket', 'ocurly', 'ccurly',
-  'string', 'integer', 'colon',
+  'string', 'integer', 'colon', 'comma',
   'BOR', 'XOR', 'BAND', 'EQ', 'DEQ', 'NEQ', 'GT', 'GE', 'LT', 'LE', 
   'RSHIFT', 'LSHIFT', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD'
 ] + keywords
@@ -202,6 +202,7 @@ t_main_DIVIDE = r'/'
 t_main_MOD = r'%'
 
 t_main_colon = r':'
+t_main_comma = r','
 
 def t_main_identifier(t):
   # TODO: recognize identifiers and keywords

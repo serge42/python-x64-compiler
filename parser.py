@@ -42,8 +42,6 @@ def p_suite_statement(p):
     elif len(p) == 3:
         p[1].append(p[2])
         p[0] = p[1]
-    else:
-        raise RuntimeError('Unrecognized length')
 
 def p_statement_group(p):
     '''statement : expression
@@ -88,33 +86,6 @@ def p_expression_binop(p):
     if len(p) == 4:
         op = ast.Add() if p[2] == '+' else ast.Sub()
         lhs = p[1]; rhs = p[3]
-
-        # if isinstance(lhs, ast.BOX) and isinstance(rhs, ast.BOX):
-        #     if lhs.boxing: lhs = ast.BOX(lhs, lhs.type, boxing=False)
-        #     if rhs.boxing: rhs = ast.BOX(rhs, rhs.type, boxing=False)
-
-        #     # IF lhs & rhs are int or lhs is int and rhs is bool or lhs is bool and rhs is bool or lhs & rhs are bool -> int
-        #     if lhs.type == ast.Box_types.integer and rhs.type == ast.Box_types.integer or \
-        #             lhs.type == ast.Box_types.boolean and rhs.type == ast.Box_types.boolean or \
-        #             lhs.type == ast.Box_types.boolean and rhs.type == ast.Box_types.integer or \
-        #             lhs.type == ast.Box_types.integer and rhs.type == ast.Box_types.boolean:
-        #         p[0] = ast.BOX(ast.BinOp(op, lhs, rhs), ast.Box_types.integer)
-        #     else:
-        #         # if isinstance(lhs, ast.Box_int): lhs = ast.Unbox_int(lhs)
-        #         # if isinstance(rhs, ast.Box_int): rhs = ast.Unbox_int(rhs)
-        #         p[0] = ast.BOX(ast.BinOp(op, lhs, rhs), lhs.type)
-
-        # else:
-        #     if isinstance(lhs, ast.BOX) and lhs.boxing: 
-        #         lhs = ast.BOX(lhs, lhs.type, boxing=False)
-        #     else:
-        #         lhs = ast.BOX(lhs, ast.Box_types.undefined, boxing=False)
-        #     if isinstance(rhs, ast.BOX) and rhs.boxing:
-        #         rhs = ast.BOX(rhs, rhs.type, boxing=False)
-        #     else:
-        #         rhs = ast.BOX(rhs, ast.Box_types.undefined, boxing=False)
-        #     p[0] = ast.BOX(ast.BinOp(op, lhs, rhs), ast.Box_types.undefined)
-
         p[0] = ast.BinOp(left=p[1], op=op, right=p[3])
 
     elif len(p) == 2: # expression : term
@@ -209,15 +180,27 @@ def p_factor_number_name_call(p):
 
 def p_factor_list(p):
     '''factor : obracket cbracket
-              | obracket expression cbracket
+              | obracket series cbracket
               | name obracket integer cbracket'''
     if len(p) == 3:
         p[0] = ast.List()
     elif len(p) == 4:
         pass # TODO accept multiple expr separated by commas
-        p[0] = ast.List([ p[2] ])
+        p[0] = ast.List(p[2])
     elif len(p) == 5:
         p[0] = ast.Subscript(p[1], p[3])
+
+def p_series_expr(p):
+    '''series : series comma expression
+              | expression'''
+    # if len(p) == 2:
+    #     p[0] = [ p[1] ]
+    # elif len(p) == 4:
+    #     p[0].append(p[3])
+    if len(p) == 2:
+        p[0] = [ p[1] ]
+    elif len(p) == 4:
+        p[0].append(p[3])
 
 # In case we have to add float numbers
 def p_number(p):

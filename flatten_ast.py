@@ -203,5 +203,11 @@ def flatten(t, flatten_stmts, temp=None):
             # Add end label
             flatten_stmts.append(SimpleStmt(Ops.label, end_label))
 
+    elif isinstance(t, ast.List):
+        s = SimpleStmt(Ops.call, 'new_list', len(t.elts), temp)
+
+    elif isinstance(t, ast.Subscript):
+        pass
+
     else:
         print("{}".format(t))

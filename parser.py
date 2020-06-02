@@ -180,7 +180,7 @@ def p_factor_number_name_call(p):
 
 def p_factor_list(p):
     '''factor : obracket cbracket
-              | obracket series cbracket
+              | obracket expression cbracket
               | name obracket integer cbracket'''
     if len(p) == 3:
         p[0] = ast.List()
